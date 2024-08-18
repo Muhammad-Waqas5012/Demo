@@ -7,10 +7,11 @@ When zooming in and out on the web map, the point markers (icons) would move or 
 Causes of the Issue
 The problem lies in the following properties in the style.js script:
 
+```
 anchor: [11, 11],
 anchorXUnits: "pixels",
 anchorYUnits: "pixels",
-
+```
 
 Anchoring with "pixels" makes the icon's position relative to a fixed pixel location, which can cause the icon to shift as the zoom level changes.
 
@@ -39,7 +40,7 @@ var style_US_Metro_Counties_Centroids_2 = function(feature, resolution){
 ```
 
 Updated Code
-
+```
 var style_US_Metro_Counties_Centroids_2 = function(feature, resolution){
     var context = { feature: feature, variables: {} };
     var labelText = "";
@@ -57,14 +58,12 @@ var style_US_Metro_Counties_Centroids_2 = function(feature, resolution){
     })];
     return style;
 };
-
+```
 Key Changes
-
 Anchor Position: Updated from [11, 11] to [0.5, 0.5], making it relative to the icon’s center.
 Anchor Units: Changed anchorXUnits and anchorYUnits from "pixels" to "fraction", which centers the icon relative to its size.
 
 How to Use
-
 Export your web map from QGIS using the qgis2web plugin.
 Navigate to the style.js file located in the "Style" folder.
 Replace the relevant code with the updated script provided above.
