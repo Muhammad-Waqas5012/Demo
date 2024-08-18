@@ -1,1 +1,111 @@
+QGIS Web Map Popup Display Fix
+This repository contains a web map exported from QGIS using the qgis2web plugin. During development, I encountered issues with popups not displaying correctly. Below is a summary of the solutions applied to resolve these issues.
 
+Problem Description
+After exporting the web map from QGIS, I noticed that:
+
+The popup style was not properly aligned, and the design was inconsistent.
+The popup position was incorrect when displayed on the map, often overflowing the viewport or not appearing where intended.
+Causes of the Issues
+CSS Styling Issue: The .ol-popup class contained style properties that were causing misalignment and overflow problems.
+JavaScript Positioning Issue: The updatePopup() function in the qgis2web.js file did not account for map dimensions and popup overflow scenarios, leading to improper positioning.
+Solutions
+1. Fixing the CSS Styling (Reason 1)
+I modified the CSS file qgis2web.css located in the Resource Folder:
+
+Original Code:
+
+.ol-popup {
+    display: none;
+    position: absolute;
+    background-color: white;
+    padding: 15px;
+	border-radius: 10px;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+	box-shadow: 0 3px 14px rgba(0,0,0,0.4);
+}
+
+Updated Code:
+
+.ol-popup {
+    position: absolute;
+    background-color: white;
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid #cccccc;
+    bottom: auto; /* Ensures it does not overflow */
+    max-width: 300px;
+    max-height: 200px; /* Prevents it from overflowing the viewport */
+    overflow: auto;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    transform: translateX(-50%); /* Centers the popup horizontally */
+}
+
+2. Adjusting the Popup Positioning in JavaScript (Reason 2)
+The positioning logic in the qgis2web.js file was updated to prevent the popup from overflowing the map bounds.
+
+Original Code:
+
+function updatePopup() {
+    if (popupContent) {
+        overlayPopup.setPosition(popupCoord);
+        content.innerHTML = popupContent;
+        container.style.display = 'block';
+    } else {
+        container.style.display = 'none';
+        closer.blur();
+    }
+}
+
+Updated Code:
+
+function updatePopup() {
+    if (popupContent) {
+        // Get map container dimensions
+        const mapContainer = map.getTargetElement();
+        const mapWidth = mapContainer.clientWidth;
+        const mapHeight = mapContainer.clientHeight;
+
+        // Get popup element dimensions
+        const popupElement = container; // Assuming container is the popup element
+        const popupWidth = popupElement.offsetWidth;
+        const popupHeight = popupElement.offsetHeight;
+
+        // Calculate the popup position
+        let x = popupCoord[0];
+        let y = popupCoord[1];
+        const pixel = map.getPixelFromCoordinate([x, y]);
+
+        // Check if the popup goes out of bounds horizontally (left/right)
+        if (pixel[0] + popupWidth > mapWidth) {
+            x -= popupWidth; // Shift left if it goes out of bounds to the right
+        }
+        if (pixel[0] < 0) {
+            x += popupWidth; // Shift right if it goes out of bounds to the left
+        }
+
+        // Check if the popup goes out of bounds vertically (top/bottom)
+        if (pixel[1] + popupHeight > mapHeight) {
+            y -= popupHeight; // Shift up if it goes out of bounds to the bottom
+        }
+        if (pixel[1] < 0) {
+            y += popupHeight; // Shift down if it goes out of bounds to the top
+        }
+
+        // Update the popup position
+        overlayPopup.setPosition([x, y]);
+        content.innerHTML = popupContent;
+        container.style.display = 'block';
+    } else {
+        container.style.display = 'none';
+        closer.blur();
+    }
+}
+
+How to Use
+
+Export your web map from QGIS using the qgis2web plugin.
+Replace the qgis2web.css and qgis2web.js files in the Resource Folder with the updated versions from this repository.
+Open your map in a browser to see the improved popup functionality.
