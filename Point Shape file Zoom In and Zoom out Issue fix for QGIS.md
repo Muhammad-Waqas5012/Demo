@@ -18,7 +18,7 @@ Solution
 The anchorXUnits and anchorYUnits properties must be changed to "fraction" to fix this. This adjustment anchors the icon relative to its size, ensuring consistent positioning across zoom levels.
 
 Original Code
-`
+```
 var style_US_Metro_Counties_Centroids_2 = function(feature, resolution){
     var context = { feature: feature, variables: {} };
     var labelText = "";
@@ -36,7 +36,8 @@ var style_US_Metro_Counties_Centroids_2 = function(feature, resolution){
     })];
     return style;
 };
-`
+```
+
 Updated Code
 
 var style_US_Metro_Counties_Centroids_2 = function(feature, resolution){
