@@ -1,94 +1,70 @@
-*Point Shape File Zoom In and Zoom Out Solution for QGIS*
+QGIS Web Map Marker Zoom Issue Fix
+This repository addresses an issue with point shapefile markers moving or shifting when zooming in and out in a web map exported from QGIS using the qgis2web plugin. The problem is related to the configuration of the anchor, anchorXUnits, and anchorYUnits properties in the ol.style.Icon settings within the style.js script.
 
-The issue you're experiencing with the markers moving or shifting location when zooming in and out is related to the configuration of the anchor, anchorXUnits, and anchorYUnitsproperties in "ol.style.Icon" settings of file style.Js script. When you will export the web map this file be in the "Style" folder, 
+Problem Description
+When zooming in and out on the web map, the point markers (icons) would move or shift location. This behavior occurred because the markers were anchored using the "pixels" unit, which caused them to behave inconsistently during zoom operations.
 
-The file Syntax is given below.
-"
-var size = 0;
-var placement = 'point';
+Causes of the Issue
+The problem lies in the following properties in the style.js script:
 
-var style_US_Metro_Counties_Centroids_2 = function(feature, resolution){
-    var context = {
-        feature: feature,
-        variables: {}
-    };
-    var value = ""
-    var labelText = "";
-    size = 0;
-    var labelFont = "10px, sans-serif";
-    var labelFill = "#000000";
-    var bufferColor = "";
-    var bufferWidth = 0;
-    var textAlign = "left";
-    var offsetX = 8;
-    var offsetY = 3;
-    var placement = 'point';
-    if ("" !== null) {
-        labelText = String("");
-    }
-    var style = [ new ol.style.Style({
-        image: new ol.style.Icon({
-                  imgSize: [700, 700],
-                  scale: 0.03142857142857143,
-                  anchor: [11, 11],
-                  anchorXUnits: "pixels",
-                  anchorYUnits: "pixels",
-                  rotation: 0.0,
-                  src: "styles/red-marker.svg"
-            }),
-        text: createTextStyle(feature, resolution, labelText, labelFont,
-                              labelFill, placement, bufferColor,
-                              bufferWidth)
-    })];
+anchor: [11, 11],
+anchorXUnits: "pixels",
+anchorYUnits: "pixels",
 
-    return style;
-};
-"
+
+Anchoring with "pixels" makes the icon's position relative to a fixed pixel location, which can cause the icon to shift as the zoom level changes.
 
 Solution
- change the anchorXUnits and anchorYUnits to "fraction". This will anchor the icon relative to its size, where 0.5 would center it.
+The anchorXUnits and anchorYUnits properties must be changed to "fraction" to fix this. This adjustment anchors the icon relative to its size, ensuring consistent positioning across zoom levels.
 
-Modified Script.
-
-"
-var size = 0;
-var placement = 'point';
+Original Code
 
 var style_US_Metro_Counties_Centroids_2 = function(feature, resolution){
-    var context = {
-        feature: feature,
-        variables: {}
-    };
-    var value = ""
+    var context = { feature: feature, variables: {} };
     var labelText = "";
-    size = 0;
-    var labelFont = "10px, sans-serif";
-    var labelFill = "#000000";
-    var bufferColor = "";
-    var bufferWidth = 0;
-    var textAlign = "left";
-    var offsetX = 8;
-    var offsetY = 3;
-    var placement = 'point';
-    if ("" !== null) {
-        labelText = String("");
-    }
     var style = [ new ol.style.Style({
         image: new ol.style.Icon({
-                  imgSize: [700, 700],
-                  scale: 0.03142857142857143,
-                  anchor: [0.5, 0.5],
-                  anchorXUnits: "fraction",
-                  anchorYUnits: "fraction",
-                  rotation: 0.0,
-                  src: "styles/red-marker.svg"
-            }),
-        text: createTextStyle(feature, resolution, labelText, labelFont,
-                              labelFill, placement, bufferColor,
-                              bufferWidth)
+            imgSize: [700, 700],
+            scale: 0.03142857142857143,
+            anchor: [11, 11],
+            anchorXUnits: "pixels",
+            anchorYUnits: "pixels",
+            rotation: 0.0,
+            src: "styles/red-marker.svg"
+        }),
+        text: createTextStyle(feature, resolution, labelText, "10px, sans-serif", "#000000", 'point', "", 0)
     })];
-
     return style;
 };
 
-"
+Updated Code
+
+var style_US_Metro_Counties_Centroids_2 = function(feature, resolution){
+    var context = { feature: feature, variables: {} };
+    var labelText = "";
+    var style = [ new ol.style.Style({
+        image: new ol.style.Icon({
+            imgSize: [700, 700],
+            scale: 0.03142857142857143,
+            anchor: [0.5, 0.5],
+            anchorXUnits: "fraction",
+            anchorYUnits: "fraction",
+            rotation: 0.0,
+            src: "styles/red-marker.svg"
+        }),
+        text: createTextStyle(feature, resolution, labelText, "10px, sans-serif", "#000000", 'point', "", 0)
+    })];
+    return style;
+};
+
+Key Changes
+
+Anchor Position: Updated from [11, 11] to [0.5, 0.5], making it relative to the icon’s center.
+Anchor Units: Changed anchorXUnits and anchorYUnits from "pixels" to "fraction", which centers the icon relative to its size.
+
+How to Use
+
+Export your web map from QGIS using the qgis2web plugin.
+Navigate to the style.js file located in the "Style" folder.
+Replace the relevant code with the updated script provided above.
+Open your map in a browser to see the corrected marker behavior during zoom operations.
